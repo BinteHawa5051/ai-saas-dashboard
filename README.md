@@ -2,6 +2,20 @@
 
 A production-style AI SaaS admin dashboard built with Next.js 14, TypeScript, Tailwind CSS, shadcn/ui, Recharts, TanStack Query, and Zustand.
 
+🚀 **Live Demo:** [https://ai-saas-dashboard-phi.vercel.app](https://ai-saas-dashboard-phi.vercel.app)
+
+---
+
+## Screenshots
+
+| Overview | Analytics |
+|---|---|
+| Stats, revenue chart, usage donut, activity feed | Usage trends + model performance charts |
+
+| Users | Settings |
+|---|---|
+| Search, filter, sort, paginate, bulk select | Profile, API keys, notifications, appearance |
+
 ---
 
 ## Getting started
@@ -46,6 +60,25 @@ npm run lint
 
 ---
 
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS 3 + tw-animate-css |
+| UI Components | shadcn/ui + Radix primitives |
+| Icons | Lucide React |
+| Charts | Recharts 3 |
+| Data Fetching | TanStack React Query v5 |
+| Global State | Zustand v5 |
+| Forms | React Hook Form + Zod |
+| Theming | next-themes (light / dark / system) |
+| Date Utilities | date-fns v4 |
+| Deployment | Vercel |
+
+---
+
 ## Project structure
 
 ```
@@ -56,7 +89,9 @@ src/
 │   ├── globals.css             # CSS variables (light/dark), Tailwind base
 │   └── (dashboard)/            # Route group — all dashboard pages
 │       ├── layout.tsx          # Sidebar + Navbar shell
-│       ├── overview/           # Main dashboard with stats, charts, activity
+│       ├── loading.tsx         # Route-level loading skeleton
+│       ├── error.tsx           # Route-level error boundary
+│       ├── overview/           # Main dashboard: stats, charts, activity
 │       ├── analytics/          # Usage trends + model performance charts
 │       ├── models/             # AI model catalog with detail dialog
 │       ├── users/              # User management table
@@ -69,30 +104,32 @@ src/
 ├── lib/
 │   ├── api/                    # Mock API client + domain modules
 │   ├── hooks/                  # React Query hooks per domain
-│   ├── mock/                   # Static mock data (4 files)
+│   ├── mock/                   # Static mock data (4 files, 365 days)
 │   ├── store/                  # Zustand global store
 │   ├── chart-utils.ts          # CSS variable → chart color helpers
 │   ├── constants.ts            # App name, nav items, current user
-│   └── utils.ts                # cn() helper
+│   └── utils.ts                # cn() helper (clsx + tailwind-merge)
 ├── providers/                  # QueryProvider, ThemeProvider
 └── types/                      # TypeScript interfaces (4 domain files)
 ```
 
 ---
 
-## Key features
+## Features
 
 | Feature | Details |
 |---|---|
 | **6 dashboard pages** | Overview, Analytics, Models, Users, Billing, Settings |
-| **Dark mode** | next-themes, system/light/dark |
-| **Charts** | Recharts — area, line, bar, donut; all theme-aware |
-| **Date range filter** | 7d / 30d / 90d / 1y — wired to Analytics and Overview charts |
-| **Users table** | Search, filter by plan/status, sort, paginate, bulk select |
-| **Models catalog** | Card grid with detail dialog |
-| **Billing** | Plan comparison, usage progress, invoice history |
-| **Settings** | Profile form, API key management, notifications, appearance |
-| **Mock API** | Registry pattern — swap `registerEndpoint` handlers for real fetch calls |
+| **Dark / light mode** | next-themes with system preference support |
+| **Charts** | Area, line, bar, donut — all theme-aware via CSS variables |
+| **Date range filter** | 7d / 30d / 90d / 1y — wired to Analytics charts |
+| **Users table** | Search, filter by plan/status, sort all columns, paginate, bulk select |
+| **Models catalog** | Responsive card grid with detail dialog |
+| **Billing** | Plan comparison, API usage progress bar, invoice history |
+| **Settings** | Profile form with avatar upload, API key management, notification toggles, density preview |
+| **Error handling** | ChartErrorBoundary on every chart + route-level error.tsx |
+| **Loading states** | Skeleton fallbacks per component + route-level loading.tsx |
+| **Mock API** | Registry pattern — swap handlers for real fetch calls with no other changes |
 
 ---
 
@@ -113,8 +150,6 @@ registerEndpoint("/users", () =>
 );
 ```
 
-Or replace `apiClient.get()` calls in the hooks directly with your preferred HTTP client.
-
 ---
 
 ## Simulating API errors (dev only)
@@ -122,15 +157,27 @@ Or replace `apiClient.get()` calls in the hooks directly with your preferred HTT
 To test error UI, open the browser console and run:
 
 ```js
-// 30% random failure rate
 import { apiClient } from "@/lib/api/client";
-apiClient.setErrorRate(0.3);
+apiClient.setErrorRate(0.3); // 30% random failure rate
 ```
+
+---
+
+## Deployment
+
+This project is deployed on **Vercel**.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/BinteHawa5051/ai-saas-dashboard)
+
+To deploy your own copy:
+1. Fork this repo
+2. Go to [vercel.com](https://vercel.com) and import the fork
+3. No environment variables required — click Deploy
 
 ---
 
 ## Notes
 
-- **No authentication** — all routes are open. Add middleware or an auth provider before deploying.
-- **External images** — avatars (DiceBear) and thumbnails (Unsplash) require network access. Offline = broken images.
-- **Python venv/** — if present in the project root, it is unrelated to the Next.js app and can be ignored or deleted.
+- **No authentication** — all routes are open. Add middleware or an auth provider before using in production.
+- **External images** — avatars (DiceBear) and thumbnails (Unsplash) require network access.
+- **Mock data only** — no real backend or database is connected.
