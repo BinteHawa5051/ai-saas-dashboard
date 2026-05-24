@@ -12,8 +12,7 @@ export const MOCK_MODELS: AIModel[] = [
     successRate: 99.7,
     costPerToken: 0.000005,
     totalRevenue: 48_920,
-    thumbnail:
-      "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=400&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400&q=80",
   },
   {
     id: "model-002",
@@ -26,8 +25,7 @@ export const MOCK_MODELS: AIModel[] = [
     successRate: 99.5,
     costPerToken: 0.000003,
     totalRevenue: 36_140,
-    thumbnail:
-      "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=400&q=80",
   },
   {
     id: "model-003",
@@ -40,8 +38,7 @@ export const MOCK_MODELS: AIModel[] = [
     successRate: 99.2,
     costPerToken: 0.0000025,
     totalRevenue: 28_750,
-    thumbnail:
-      "https://images.unsplash.com/photo-1655720828018-edd2daec9349?w=400&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=400&q=80",
   },
   {
     id: "model-004",
@@ -54,8 +51,7 @@ export const MOCK_MODELS: AIModel[] = [
     successRate: 98.8,
     costPerToken: 0.0000009,
     totalRevenue: 18_430,
-    thumbnail:
-      "https://images.unsplash.com/photo-1676299081847-824916de030a?w=400&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&q=80",
   },
   {
     id: "model-005",
@@ -68,8 +64,7 @@ export const MOCK_MODELS: AIModel[] = [
     successRate: 99.1,
     costPerToken: 0.000002,
     totalRevenue: 14_280,
-    thumbnail:
-      "https://images.unsplash.com/photo-1684163761999-dc4f959e1a4f?w=400&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80",
   },
   {
     id: "model-006",
@@ -82,8 +77,7 @@ export const MOCK_MODELS: AIModel[] = [
     successRate: 97.5,
     costPerToken: 0.00004,
     totalRevenue: 22_150,
-    thumbnail:
-      "https://images.unsplash.com/photo-1686191129007-cb7c0b1c9f90?w=400&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1547954575-855750c57bd3?w=400&q=80",
   },
   {
     id: "model-007",
@@ -96,8 +90,7 @@ export const MOCK_MODELS: AIModel[] = [
     successRate: 99.9,
     costPerToken: 0.000006,
     totalRevenue: 9_870,
-    thumbnail:
-      "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&q=80",
   },
   {
     id: "model-008",
@@ -110,7 +103,6 @@ export const MOCK_MODELS: AIModel[] = [
     successRate: 96.2,
     costPerToken: 0.000008,
     totalRevenue: 7_640,
-    thumbnail:
-      "https://images.unsplash.com/photo-1675557009875-436f7a7cf0f4?w=400&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1561736778-92e52a7769ef?w=400&q=80",
   },
 ];

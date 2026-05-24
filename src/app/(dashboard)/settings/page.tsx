@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,11 +33,12 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
+// Fix: bio is optional and allows empty string
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Enter a valid email address"),
   company: z.string().min(1, "Company is required"),
-  bio: z.string().max(280, "Bio must be 280 characters or fewer"),
+  bio: z.string().max(280, "Bio must be 280 characters or fewer").optional().or(z.literal("")),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -65,10 +66,8 @@ function SettingsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tabFromUrl = searchParams.get("tab");
-  const activeTab = useMemo(
-    () => (isSettingsTab(tabFromUrl) ? tabFromUrl : "profile"),
-    [tabFromUrl],
-  );
+  // Fix: derive activeTab without key={activeTab} so the component never remounts
+  const activeTab: SettingsTab = isSettingsTab(tabFromUrl) ? tabFromUrl : "profile";
 
   const { theme, setTheme } = useTheme();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(INITIAL_API_KEYS);
@@ -95,13 +94,11 @@ function SettingsPageContent() {
     },
   });
 
-  // #15: avatar file picker wired up
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) setAvatarPreview(URL.createObjectURL(file));
   };
 
-  // #21: copy shows visual feedback (masked value — real app copies actual secret at generation time)
   const copyKey = (masked: string, id: string) => {
     void navigator.clipboard.writeText(masked);
     setCopyStatus((prev) => ({ ...prev, [id]: true }));
@@ -122,14 +119,13 @@ function SettingsPageContent() {
     ]);
   };
 
-  // #14: save handler gives real feedback
   const onSubmit = (values: ProfileFormValues) => {
     console.info("Profile saved:", values);
     setSaveStatus("saved");
     setTimeout(() => setSaveStatus("idle"), 2500);
   };
 
-  // #11: clicking a tab updates the URL so back/forward and deep links work
+  // Fix: tab change updates URL — no key remount needed
   const handleTabChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", value);
@@ -145,7 +141,8 @@ function SettingsPageContent() {
         </p>
       </div>
 
-      <Tabs key={activeTab} defaultValue={activeTab} onValueChange={handleTabChange}>
+      {/* Fix: removed key={activeTab} — was remounting the whole Tabs on every URL change */}
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="api-keys">API Keys</TabsTrigger>
@@ -167,7 +164,6 @@ function SettingsPageContent() {
                     <AvatarImage src={avatarPreview} alt={CURRENT_USER.name} />
                     <AvatarFallback>SM</AvatarFallback>
                   </Avatar>
-                  {/* #15: hidden file input wired to button */}
                   <input
                     ref={avatarInputRef}
                     type="file"
@@ -205,8 +201,8 @@ function SettingsPageContent() {
                     )}
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Input id="bio" {...form.register("bio")} />
+                    <Label htmlFor="bio">Bio <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                    <Input id="bio" {...form.register("bio")} placeholder="Tell us about yourself..." />
                     {form.formState.errors.bio && (
                       <p className="text-xs text-destructive">{form.formState.errors.bio.message}</p>
                     )}
@@ -215,7 +211,6 @@ function SettingsPageContent() {
 
                 <div className="flex items-center gap-3">
                   <Button type="submit">Save changes</Button>
-                  {/* #14: success feedback */}
                   {saveStatus === "saved" && (
                     <span className="text-sm text-emerald-600 dark:text-emerald-400">
                       ✓ Profile saved
@@ -263,7 +258,6 @@ function SettingsPageContent() {
                       <TableCell className="text-muted-foreground">{key.createdAt}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          {/* #21: copy with visual feedback */}
                           <Button
                             variant="ghost" size="icon"
                             className={cn("size-8", copyStatus[key.id] && "text-emerald-500")}
@@ -333,7 +327,6 @@ function SettingsPageContent() {
               <CardDescription>Customize how NeuralDesk looks for you</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* #13: single theme control — Select only, ThemeToggle removed from here */}
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="font-medium">Color scheme</p>
@@ -353,7 +346,6 @@ function SettingsPageContent() {
 
               <Separator />
 
-              {/* #12: density select now has a live visual preview */}
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="font-medium">Density</p>
@@ -373,7 +365,6 @@ function SettingsPageContent() {
                 </Select>
               </div>
 
-              {/* #12: live density preview so the setting visibly does something */}
               <div className={cn(
                 "rounded-lg border border-dashed border-border transition-all duration-200",
                 density === "compact" ? "p-2" : "p-5",
