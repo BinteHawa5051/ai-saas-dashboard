@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import {
   RecentActivity,
   RecentActivitySkeleton,
@@ -106,6 +107,9 @@ function BottomRow() {
 }
 
 export default function OverviewPage() {
+  const { data: session } = useSession();
+  const firstName = session?.user?.name?.split(" ")[0] ?? "there";
+
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-xl border border-border">
@@ -121,7 +125,7 @@ export default function OverviewPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/60 to-transparent" />
           <div className="absolute inset-0 flex flex-col justify-center p-6">
             <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-              Welcome back, Sofia
+              Welcome back, {firstName}
             </h2>
             <p className="mt-1 max-w-lg text-sm text-muted-foreground md:text-base">
               Your AI platform processed 2.4M API calls this month with 99.2%
