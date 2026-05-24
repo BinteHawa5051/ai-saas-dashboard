@@ -10,7 +10,7 @@ export function registerEndpoint<T>(
 }
 
 class ApiClient {
-  private baseDelay = 300;
+  private baseDelay = 100; // reduced from 300ms
   // #25: set to a number 0–1 to simulate random failures (e.g. 0.1 = 10% failure rate)
   // Keep at 0 in production; set to 0.3 in dev to test error UI
   private errorRate = 0;
