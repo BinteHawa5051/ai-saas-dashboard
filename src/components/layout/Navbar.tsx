@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import {
   Bell,
   CreditCard,
@@ -39,14 +40,20 @@ import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const setMobileOpen = useAppStore((s) => s.setMobileSidebarOpen);
   const collapsed = useAppStore((s) => s.sidebarCollapsed);
   const dateRange = useAppStore((s) => s.selectedDateRange);
   const setDateRange = useAppStore((s) => s.setDateRange);
   const notifications = useAppStore((s) => s.notifications);
   const markAllRead = useAppStore((s) => s.markAllRead);
-  const currentUser = useAppStore((s) => s.currentUser);
+  // Use real session user; fall back to store for optimistic profile updates
+  const { data: session } = useSession();
+  const storeUser = useAppStore((s) => s.currentUser);
+  const currentUser = {
+    name: session?.user?.name ?? storeUser.name,
+    email: session?.user?.email ?? storeUser.email,
+    avatar: session?.user?.image ?? storeUser.avatar,
+  };
 
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -54,7 +61,7 @@ export function Navbar() {
   const basePath = pathname.split("?")[0];
   const pageTitle = PAGE_TITLES[basePath] ?? "Dashboard";
 
-  const handleSignOut = () => router.push("/");
+  const handleSignOut = () => signOut({ callbackUrl: "/login" });
 
   // ⌘K / Ctrl+K opens search
   useEffect(() => {

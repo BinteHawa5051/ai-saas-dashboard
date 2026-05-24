@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useSession } from "next-auth/react";
 import {
   Bell,
   Check,
@@ -114,8 +115,18 @@ function SettingsPageContent() {
   const activeTab: SettingsTab = isSettingsTab(tabFromUrl) ? tabFromUrl : "profile";
 
   const { theme, setTheme } = useTheme();
+  const { data: session, update: updateSession } = useSession();
   const currentUser = useAppStore((s) => s.currentUser);
   const updateProfile = useAppStore((s) => s.updateProfile);
+
+  // Prefer real session data, fall back to Zustand store
+  const displayUser = {
+    name: session?.user?.name ?? currentUser.name,
+    email: session?.user?.email ?? currentUser.email,
+    company: (session?.user as { company?: string })?.company ?? currentUser.company,
+    bio: (session?.user as { bio?: string })?.bio ?? currentUser.bio,
+    avatar: session?.user?.image ?? currentUser.avatar,
+  };
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(INITIAL_API_KEYS);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
   const [notifications, setNotifications] = useState({
@@ -128,15 +139,15 @@ function SettingsPageContent() {
   const [copyStatus, setCopyStatus] = useState<Record<string, boolean>>({});
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string>(currentUser.avatar);
+  const [avatarPreview, setAvatarPreview] = useState<string>(displayUser.avatar);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: currentUser.name,
-      email: currentUser.email,
-      company: currentUser.company,
-      bio: currentUser.bio,
+      name: displayUser.name,
+      email: displayUser.email,
+      company: displayUser.company,
+      bio: displayUser.bio,
     },
   });
 
@@ -166,20 +177,50 @@ function SettingsPageContent() {
     ]);
   };
 
-  const onSubmit = (values: ProfileFormValues) => {
+  const onSubmit = async (values: ProfileFormValues) => {
     setSaveStatus("saving");
-    setTimeout(() => {
-      // Write to global store — updates Navbar, avatar, everywhere instantly
-      updateProfile({
+    try {
+      // Save to database
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          company: values.company,
+          bio: values.bio,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Failed to save");
+      }
+
+      // Update NextAuth session so navbar reflects changes immediately
+      await updateSession({
         name: values.name,
         email: values.email,
         company: values.company,
         bio: values.bio,
+        image: avatarPreview,
+      });
+
+      // Also update Zustand store for instant UI update
+      updateProfile({
+        name: values.name,
+        email: values.email,
+        company: values.company ?? "",
+        bio: values.bio ?? "",
         avatar: avatarPreview,
       });
+
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2500);
-    }, 600);
+    } catch (err) {
+      console.error("Profile save error:", err);
+      setSaveStatus("idle");
+    }
   };
 
   const handleTabChange = (tab: SettingsTab) => {
@@ -292,14 +333,14 @@ function SettingsPageContent() {
                   {/* Avatar row */}
                   <div className="flex items-center gap-5 rounded-xl border border-border bg-muted/30 p-4">
                     <Avatar className="size-20 ring-2 ring-border ring-offset-2 ring-offset-background">
-                      <AvatarImage src={avatarPreview} alt={currentUser.name} />
+                      <AvatarImage src={avatarPreview} alt={displayUser.name} />
                       <AvatarFallback className="text-lg">
-                        {currentUser.name.split(" ").map((n) => n[0]).join("")}
+                        {displayUser.name.split(" ").map((n) => n[0]).join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">{currentUser.name}</p>
-                      <p className="text-xs text-muted-foreground">{currentUser.email}</p>
+                      <p className="text-sm font-medium">{displayUser.name}</p>
+                      <p className="text-xs text-muted-foreground">{displayUser.email}</p>
                       <input
                         ref={avatarInputRef}
                         type="file"
