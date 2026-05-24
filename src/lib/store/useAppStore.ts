@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { CURRENT_USER } from "@/lib/constants";
 
 export type DateRange = "7d" | "30d" | "90d" | "1y";
 
@@ -10,7 +11,19 @@ export interface Notification {
   createdAt: string;
 }
 
+export interface UserProfile {
+  name: string;
+  email: string;
+  company: string;
+  bio: string;
+  avatar: string;
+}
+
 interface AppStore {
+  // User profile — editable from Settings
+  currentUser: UserProfile;
+  updateProfile: (profile: Partial<UserProfile>) => void;
+
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
@@ -47,6 +60,19 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
 ];
 
 export const useAppStore = create<AppStore>((set) => ({
+  // Seed from the constants default user
+  currentUser: {
+    name: CURRENT_USER.name,
+    email: CURRENT_USER.email,
+    company: CURRENT_USER.company,
+    bio: "Building intelligent products with NeuralDesk AI infrastructure.",
+    avatar: CURRENT_USER.avatar,
+  },
+  updateProfile: (profile) =>
+    set((state) => ({
+      currentUser: { ...state.currentUser, ...profile },
+    })),
+
   sidebarCollapsed: false,
   toggleSidebar: () =>
     set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),

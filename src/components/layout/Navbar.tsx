@@ -12,7 +12,7 @@ import {
   Settings,
   User,
 } from "lucide-react";
-import { CURRENT_USER, DATE_RANGE_OPTIONS, PAGE_TITLES } from "@/lib/constants";
+import { DATE_RANGE_OPTIONS, PAGE_TITLES } from "@/lib/constants";
 import { useAppStore } from "@/lib/store/useAppStore";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { SearchModal } from "@/components/layout/SearchModal";
@@ -46,6 +46,7 @@ export function Navbar() {
   const setDateRange = useAppStore((s) => s.setDateRange);
   const notifications = useAppStore((s) => s.notifications);
   const markAllRead = useAppStore((s) => s.markAllRead);
+  const currentUser = useAppStore((s) => s.currentUser);
 
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -180,12 +181,12 @@ export function Navbar() {
               buttonVariants({ variant: "ghost", size: "icon" }),
               "relative size-9 rounded-full p-0",
             )}
-            aria-label={`User menu for ${CURRENT_USER.name}`}
+            aria-label={`User menu for ${currentUser.name}`}
           >
             <Avatar className="size-8">
-              <AvatarImage src={CURRENT_USER.avatar} alt={CURRENT_USER.name} />
+              <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
               <AvatarFallback>
-                {CURRENT_USER.name
+                {currentUser.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
@@ -197,9 +198,9 @@ export function Navbar() {
             <DropdownMenuGroup>
               <DropdownMenuLabel>
                 <div className="flex flex-col">
-                  <span>{CURRENT_USER.name}</span>
+                  <span>{currentUser.name}</span>
                   <span className="text-xs font-normal text-muted-foreground">
-                    {CURRENT_USER.email}
+                    {currentUser.email}
                   </span>
                 </div>
               </DropdownMenuLabel>

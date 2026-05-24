@@ -16,7 +16,7 @@ import {
   User,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { CURRENT_USER } from "@/lib/constants";
+import { useAppStore } from "@/lib/store/useAppStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -114,6 +114,8 @@ function SettingsPageContent() {
   const activeTab: SettingsTab = isSettingsTab(tabFromUrl) ? tabFromUrl : "profile";
 
   const { theme, setTheme } = useTheme();
+  const currentUser = useAppStore((s) => s.currentUser);
+  const updateProfile = useAppStore((s) => s.updateProfile);
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(INITIAL_API_KEYS);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
   const [notifications, setNotifications] = useState({
@@ -126,15 +128,15 @@ function SettingsPageContent() {
   const [copyStatus, setCopyStatus] = useState<Record<string, boolean>>({});
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string>(CURRENT_USER.avatar);
+  const [avatarPreview, setAvatarPreview] = useState<string>(currentUser.avatar);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: CURRENT_USER.name,
-      email: CURRENT_USER.email,
-      company: CURRENT_USER.company,
-      bio: "Building intelligent products with NeuralDesk AI infrastructure.",
+      name: currentUser.name,
+      email: currentUser.email,
+      company: currentUser.company,
+      bio: currentUser.bio,
     },
   });
 
@@ -167,7 +169,14 @@ function SettingsPageContent() {
   const onSubmit = (values: ProfileFormValues) => {
     setSaveStatus("saving");
     setTimeout(() => {
-      console.info("Profile saved:", values);
+      // Write to global store — updates Navbar, avatar, everywhere instantly
+      updateProfile({
+        name: values.name,
+        email: values.email,
+        company: values.company,
+        bio: values.bio,
+        avatar: avatarPreview,
+      });
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2500);
     }, 600);
@@ -283,14 +292,14 @@ function SettingsPageContent() {
                   {/* Avatar row */}
                   <div className="flex items-center gap-5 rounded-xl border border-border bg-muted/30 p-4">
                     <Avatar className="size-20 ring-2 ring-border ring-offset-2 ring-offset-background">
-                      <AvatarImage src={avatarPreview} alt={CURRENT_USER.name} />
+                      <AvatarImage src={avatarPreview} alt={currentUser.name} />
                       <AvatarFallback className="text-lg">
-                        {CURRENT_USER.name.split(" ").map((n) => n[0]).join("")}
+                        {currentUser.name.split(" ").map((n) => n[0]).join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">{CURRENT_USER.name}</p>
-                      <p className="text-xs text-muted-foreground">{CURRENT_USER.email}</p>
+                      <p className="text-sm font-medium">{currentUser.name}</p>
+                      <p className="text-xs text-muted-foreground">{currentUser.email}</p>
                       <input
                         ref={avatarInputRef}
                         type="file"
