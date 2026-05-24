@@ -42,15 +42,12 @@ import {
 import { cn } from "@/lib/utils";
 
 /* ─── Schema ─────────────────────────────────────────────── */
+// Use a simple schema — no complex union types that break across Zod versions
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Enter a valid email address"),
   company: z.string().min(1, "Company is required"),
-  bio: z
-    .string()
-    .max(280, "Bio must be 280 characters or fewer")
-    .optional()
-    .or(z.literal("")),
+  bio: z.string().max(280, "Bio must be 280 characters or fewer"),
 });
 type ProfileFormValues = z.infer<typeof profileSchema>;
 

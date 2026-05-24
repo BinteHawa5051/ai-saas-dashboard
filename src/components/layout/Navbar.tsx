@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -14,6 +15,7 @@ import {
 import { CURRENT_USER, DATE_RANGE_OPTIONS, PAGE_TITLES } from "@/lib/constants";
 import { useAppStore } from "@/lib/store/useAppStore";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { SearchModal } from "@/components/layout/SearchModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -45,16 +47,25 @@ export function Navbar() {
   const notifications = useAppStore((s) => s.notifications);
   const markAllRead = useAppStore((s) => s.markAllRead);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  // #9: strip query string before looking up title so /settings?tab=profile → "Settings"
+  const unreadCount = notifications.filter((n) => !n.read).length;
   const basePath = pathname.split("?")[0];
   const pageTitle = PAGE_TITLES[basePath] ?? "Dashboard";
 
-  // #16 (F4): sign out navigates to root
-  const handleSignOut = () => {
-    router.push("/");
-  };
+  const handleSignOut = () => router.push("/");
+
+  // ⌘K / Ctrl+K opens search
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   return (
     <header
@@ -75,24 +86,24 @@ export function Navbar() {
 
       <h1 className="text-lg font-semibold tracking-tight">{pageTitle}</h1>
 
-      {/* #17: search is decorative — clearly disabled */}
+      {/* Search button — opens command palette modal */}
       <div className="mx-auto hidden max-w-md flex-1 md:block">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            placeholder="Search... (⌘K)"
-            className="h-9 w-full cursor-not-allowed rounded-lg border border-input bg-muted/50 pl-9 pr-12 text-sm opacity-50 outline-none placeholder:text-muted-foreground"
-            readOnly
-            disabled
-            aria-label="Search (coming soon)"
-            title="Search coming soon"
-          />
-          <kbd className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-xs text-muted-foreground sm:flex">
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          className="flex h-9 w-full items-center gap-2 rounded-lg border border-input bg-muted/50 px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Open search"
+        >
+          <Search className="size-4 shrink-0" />
+          <span className="flex-1 text-left">Search pages, models, users…</span>
+          <kbd className="hidden items-center gap-1 rounded border border-border bg-background px-1.5 font-mono text-xs sm:flex">
             ⌘K
           </kbd>
-        </div>
+        </button>
       </div>
+
+      {/* Search modal */}
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <div className="ml-auto flex items-center gap-2">
         <Select
